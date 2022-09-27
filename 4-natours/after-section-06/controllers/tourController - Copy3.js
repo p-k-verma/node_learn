@@ -1,12 +1,9 @@
 const Tour = require('./../models/tourModel')
 const APIFeatures = require('./../utils/apiFeatures');
 
-//! we have written the logic detail in the catchAsync file
-const catchAsync = require('./../utils/catchAsync')
-const AppError = require('./../utils/appError')
-
-exports.getAllTours = catchAsync( async (req, res, next) => {
-
+exports.getAllTours = async (req, res) => {
+  try {
+    // EXECUTE QUERY
     const features = new APIFeatures(Tour.find(), req.query)
       .filter()
       .sort()
@@ -22,46 +19,65 @@ exports.getAllTours = catchAsync( async (req, res, next) => {
         tours
       }
     });
-});
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err
+    });
+  }
+};
 
-exports.getTour = catchAsync( async (req, res, next) => {
+
+//findbyId gives the promise and it is built in method of mongoose to give single product which matches the id
+exports.getTour = async (req, res) => {
+  try {
     const tour = await Tour.findById(req.params.id)
-
-    if (!tour) {
-      return next(new AppError('No tour found with thaat ID', 404))
-    }
-
     res.status(200).json({
       status: 'success',
       data: {
         tour
       }
     });
-});
+  } catch (error) {
+    res.status(404).json({
+      status: 'fail',
+      message: error
+    })
+  }
+};
 
-exports.createTour = catchAsync(async (req, res, next) => {
+//keep in mind that create return the promise
+exports.createTour = async (req, res) => {
+  try {
     const newTour = await Tour.create(req.body)
-
     res.status(201).json({
       status: 'success',
       data: {
         tour: newTour
       }
     });
-});
+
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error
+    })
+  }
+
+  
+};
 
 
-exports.updateTour = catchAsync( async (req, res, next) => {
-
+//findByIdAndUpdate is mongoose query and it's a promise 
+//it takes two thing, one is id and other is updating value
+//new: true, will return the updated document
+//runValidators: true, checks the validation
+exports.updateTour = async (req, res) => {
+  try {
     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     })
-
-    if (!tour) {
-      return next(new AppError('No tour found with thaat ID', 404))
-    }
-
 
     res.status(200).json({
       status: 'success',
@@ -69,22 +85,30 @@ exports.updateTour = catchAsync( async (req, res, next) => {
         tour
       }
     });
-});
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error
+    })
+  }
+};
 
-exports.deleteTour = catchAsync( async (req, res, next) => {
-    const tour = await Tour.findByIdAndDelete(req.params.id)
-
-    if (!tour) {
-      return next(new AppError('No tour found with thaat ID', 404))
-    }
-
-
+exports.deleteTour = async (req, res) => {
+  try {
+    await Tour.findByIdAndDelete(req.params.id)
     res.status(204).json({
       status: 'success',
       data: null
     });
-});
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error
+    })
+  }
+};
 
+//this is the alias example
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = "5";
   req.query.sort = "-ratingsAverage,price";
@@ -93,8 +117,25 @@ exports.aliasTopTours = (req, res, next) => {
   next();
 };
 
-exports.getTourStats = catchAsync( async (req, res, next)=> {
 
+exports.getTourStats = async (req, res)=> {
+  try {
+    const stats = Tour.aggregate([
+      
+    ])
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error
+    })
+  }
+}
+
+
+//aggreation is use to calculate the statics of the collection data in various steps or stages, aggreation pipeline is mongoDB feature
+//the array in aggregate is the stages
+exports.getTourStats = async (req, res)=> {
+  try {
     const stats = await Tour.aggregate([
       // Stage 1:
       {
@@ -138,11 +179,18 @@ exports.getTourStats = catchAsync( async (req, res, next)=> {
         stats
       }
     });
-})
+
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error
+    })
+  }
+}
 
 
-exports.getMonthlyPlan = catchAsync( async (req, res, next)=> {
-
+exports.getMonthlyPlan = async (req, res)=> {
+  try {
     const year = req.params.year * 1
     const plan = await Tour.aggregate([
       {
@@ -186,4 +234,11 @@ exports.getMonthlyPlan = catchAsync( async (req, res, next)=> {
         plan
       }
     });
-})
+
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error
+    })
+  }
+}
