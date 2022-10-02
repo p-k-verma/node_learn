@@ -1,6 +1,7 @@
 const express = require('express');
 const userController = require('./../controllers/userController');
 const authController = require('./../controllers/authController');
+const reviewController = require('./../controllers/reviewController');
 
 const router = express.Router();
 
@@ -11,14 +12,23 @@ router.post('/login',authController.login)
 router.post('/forgotPassword',authController.forgotPassword)
 router.patch('/resetPassword/:token',authController.resetPassword)
 
+//* router is like mini app and we know middleware run in a seaquence, so here we added the middleware so all the routes below one all have the default prevent middleware
+router.use(authController.protect)
+
 //for updating the password after login
-router.patch('/updateMyPassword',authController.protect, authController.updatePassword )
+router.patch('/updateMyPassword', authController.updatePassword )
+
+// it gives the login user detail from the factory function
+router.get('/me', userController.getMe, userController.getUser)
 
 // below is for upating the user detail by the user
-router.patch('/updateMe',authController.protect, userController.updateMe )
+router.patch('/updateMe', userController.updateMe )
 
-router.delete('/deleteMe',authController.protect, userController.deleteMe )
+router.delete('/deleteMe', userController.deleteMe )
 
+
+// below is the middleware which applied to the all the routes below, and all routes are protected by above protect and restricted to the admin
+router.use(authController.restrictTo('admin'))
 
 router
   .route('/')

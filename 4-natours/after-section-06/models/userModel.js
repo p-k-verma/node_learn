@@ -55,31 +55,31 @@ const userSchema = new mongoose.Schema({
 });
 
 
-userSchema.pre('save', async function(next) {
-  // Only run this function if password was actually modified, ismodified is the in-built method
-  if (!this.isModified('password')) return next();
+// userSchema.pre('save', async function(next) {
+//   // Only run this function if password was actually modified, ismodified is the in-built method
+//   if (!this.isModified('password')) return next();
 
-  // Hash the password with cost of 12(unit of cpu internsive during this operation, generally use 12)
-  this.password = await bcrypt.hash(this.password, 12);
+//   // Hash the password with cost of 12(unit of cpu internsive during this operation, generally use 12)
+//   this.password = await bcrypt.hash(this.password, 12);
 
-  // Delete passwordConfirm field, because after encryption we don't want to again store the password in passwordconfirm
-  this.passwordConfirm = undefined;
-  next();
-});
+//   // Delete passwordConfirm field, because after encryption we don't want to again store the password in passwordconfirm
+//   this.passwordConfirm = undefined;
+//   next();
+// });
 
-userSchema.pre('save', function(next) {
-  if (!this.isModified('password') || this.isNew) return next();
+// userSchema.pre('save', function(next) {
+//   if (!this.isModified('password') || this.isNew) return next();
 
-  this.passwordChangedAt = Date.now() - 1000;
-  next();
-});
+//   this.passwordChangedAt = Date.now() - 1000;
+//   next();
+// });
 
-userSchema.pre('save', function(next){
-  if (!this.isModified('password') || this.isNew ) return next()
+// userSchema.pre('save', function(next){
+//   if (!this.isModified('password') || this.isNew ) return next()
 
-  this.passwordChangedAt = Date.now() - 1000
-  next()
-})
+//   this.passwordChangedAt = Date.now() - 1000
+//   next()
+// })
 
 // below is the query means that we want to alwAYS gives the active=true objects to all the find methods. so that inactive or so called deleted objects do not go to the response 
 // /^find/ means run on every query sarts with find
